@@ -12,6 +12,10 @@ class Game:
         return 0, self.N
 
     def to_move(self, state: State) -> int:
+        """
+        returns State[0] (int player)
+        Since State = tuple(int player, int number)
+        """
         player, _ = state
         return player
 
@@ -26,6 +30,11 @@ class Game:
             return (self.to_move(state) + 1) % 2, number // 2  # Floored division
 
     def is_terminal(self, state: State) -> bool:
+        """
+        returns true if State[1] (int number) == 0
+        The win condition.
+        Since State = tuple(int player, int number)
+        """
         _, number = state
         return number == 0
 
@@ -43,10 +52,40 @@ class Game:
                 print(f'P2 won')
         else:
             print(f'it is P{self.to_move(state)+1}\'s turn')
-
+"""
+function MINIMAX-SEARCH(game, state) returns an action
+	player = game.to-move(state)
+	moveValue = MAX-VALUE(game, state) # Tuple (value, move)
+	return moveValue[1]                # move
+	
+"""
 def minimax_search(game: Game, state: State) -> Action | None:
-    # YOUR CODE HERE
-    assert False, "Not implemented"
+    # ! MY CODE HERE ----------------------------------------------------------------------
+    player = game.to_move(state)
+    value, move = max_value(game, state) #(value, move)
+    return move # move
+"""
+
+"""
+def max_value(game: Game, state: State) -> tuple | None:
+    if game.is_terminal(state):
+        return (game.utility(state, player), None)
+    value, move = (float('-inf'), float('-inf'))
+    for action in game.actions(state):
+        value2, action2 = min_value(game, game.result(state,action))
+        if value2 > value:
+            value, move = (value2, action)
+    return (value, move)
+
+def min_value(game: Game, state: State) -> tuple | None:
+    if game.is_terminal(state):
+        return (game.utility(state, player), None)
+    value, move = (float('inf'), float('inf'))
+    for action in game.actions(state):
+        value2, action2 = max_value(game, game.result(state,action))
+        if value2 < value:
+            value, move = (value2, action)
+    return (value, move)
 
 game = Game(5)
 
@@ -62,6 +101,17 @@ while not game.is_terminal(state):
     game.print(state)
 
 # Expected output:
+# The number is 5 and it is P1's turn
+# P1's action: --
+# The number is 4 and it is P2's turn
+# P2's action: --
+# The number is 3 and it is P1's turn
+# P1's action: /2
+# The number is 1 and it is P2's turn
+# P2's action: --
+# The number is 0 and P1 won
+
+# Actual output:
 # The number is 5 and it is P1's turn
 # P1's action: --
 # The number is 4 and it is P2's turn
