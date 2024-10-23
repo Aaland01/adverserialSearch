@@ -81,39 +81,41 @@ class Game:
 # ! My code ----------------------------------------------------------------------------
 
 def minimax_search(game: Game, state: State) -> Action | None:
-    value, move = max_value(game, state) #(value, move)
+    player = game.to_move(state)
+    value, move = max_value(game, state, player) #(value, move)
     return move # move
 
-def max_value(game: Game, state: State) -> tuple | None:
+def max_value(game: Game, state: State, player: int) -> tuple | None:
     if game.is_terminal(state):
         return (game.utility(state, player), None)
     value, move = (float('-inf'), float('-inf'))
     for action in game.actions(state):
-        value2, action2 = min_value(game, game.result(state,action))
+        value2, action2 = min_value(game, game.result(state,action), player)
         if value2 > value:
             value, move = (value2, action)
     return (value, move)
 
-def min_value(game: Game, state: State) -> tuple | None:
+def min_value(game: Game, state: State, player: int) -> tuple | None:
     if game.is_terminal(state):
         return (game.utility(state, player), None)
     value, move = (float('inf'), float('inf'))
     for action in game.actions(state):
-        value2, action2 = max_value(game, game.result(state,action))
+        value2, action2 = max_value(game, game.result(state,action), player)
         if value2 < value:
             value, move = (value2, action)
     return (value, move)
 
 def alpha_beta_search(game: Game, state: State) -> Action | None:
-    value, move = max_value_ab(game, state, float('-inf'), float('-inf'))
+    player = game.to_move(state)
+    value, move = max_value_ab(game, state, float('-inf'), float('inf'), player)
     return move
 
-def max_value_ab(game: Game, state: State, alpha: float | int, beta: float | int) -> tuple | None:
+def max_value_ab(game: Game, state: State, alpha: float | int, beta: float | int, player: int) -> tuple | None:
     if game.is_terminal(state):
         return (game.utility(state, player), None)
     value = float('-inf')
     for action in game.actions(state):
-        value2, action2 = min_value_ab(game, game.result(state,action), alpha, beta)
+        value2, action2 = min_value_ab(game, game.result(state,action), alpha, beta, player)
         if value2 > value:
             value, move = (value2, action)
             alpha = max(alpha, value)
@@ -121,16 +123,16 @@ def max_value_ab(game: Game, state: State, alpha: float | int, beta: float | int
             return (value, move)
     return (value, move)
 
-def min_value_ab(game: Game, state: State, alpha: float | int, beta: float | int) -> tuple | None:
+def min_value_ab(game: Game, state: State, alpha: float | int, beta: float | int, player: int) -> tuple | None:
     if game.is_terminal(state):
         return (game.utility(state, player), None)
     value = float('inf')
     for action in game.actions(state):
-        value2, action2 = max_value_ab(game, game.result(state,action), alpha, beta)
+        value2, action2 = max_value_ab(game, game.result(state,action), alpha, beta, player)
         if value2 < value:
             value, move = (value2, action)
             beta = min(beta, value)
-        if value <= beta:
+        if value <= alpha:
             return (value, move)
     return (value, move)
 
@@ -139,15 +141,15 @@ state = game.initial_state()
 firstmove = True
 game.print(state)
 while not game.is_terminal(state):
-    firstMoveTimer = time() if firstmove else 0
-    player = game.to_move(state)
-    action = minimax_search(game, state) # The player whose turn it is
-                                         # is the MAX player
-    #action = alpha_beta_search(game, state)
+    if firstmove:
+        firstMoveTimer = time()
+    #action = minimax_search(game, state)   # Runtime for first move: ~30 seconds
+    action = alpha_beta_search(game, state) # Runtime for first move: ~1 seconds
     if firstmove:
         firstMoveTimer = time()-firstMoveTimer
         print(f'First move found in: {firstMoveTimer} seconds')
         firstmove = False
+    player = game.to_move(state)
     print(f'P{player+1}\'s action: {action}')
     assert action is not None
     state = game.result(state, action)
